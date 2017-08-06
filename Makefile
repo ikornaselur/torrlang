@@ -8,7 +8,7 @@
 
 ERL = erl -boot start_clean
 
-MODS = torrlang test
+MODS = torrlang bencoding test
 
 all: compile
 
