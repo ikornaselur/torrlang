@@ -57,7 +57,8 @@ bdecode([$i|T]) ->
 
 bdecode([$l|T]) ->
   % List
-  bdecode_list([], T);
+  {List, Rest} = bdecode_list([], T),
+  {lists:reverse(List), Rest};
 
 bdecode([$d|T]) ->
   % Dictionary
