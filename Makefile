@@ -26,8 +26,11 @@ lint: dialyzer
 clean: rebar_check
 	@rebar3 clean
 
-
 # Run unit tests with coverage
 cover: rebar_check
 	@rebar3 eunit --cover > /dev/null
 	@rebar3 cover
+
+# Compile the EDoc documentation from the source code
+docs: rebar_check
+	@rebar3 edoc

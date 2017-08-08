@@ -9,6 +9,7 @@
 .rebar3
 .torrent
 _build
+doc
 ebin
 erl_crash.dump
 log
