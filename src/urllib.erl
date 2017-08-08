@@ -1,19 +1,32 @@
+%%%-------------------------------------------------------------------
+%% @doc Urllib module.
+%% Utility functions to work with URLs, such as to construct url safe
+%% parameters in a get request
+%% @end
+%%%-------------------------------------------------------------------
 -module(urllib).
 -export([url_encode/1, params_from_map/1]).
 
--include_lib("eunit/include/eunit.hrl").
 
-% Urllib module
-%
-% Utils module for url items, such as to create urlsafe parameters
-
-
+%%%-------------------------------------------------------------------
+%% @doc Construct url params from a Map.
+%% Take a key/value map to generate url params.
+%% For example, take #{"foo" => "bar"} and turn it into "foo=bar".
+%% @end
+%%%-------------------------------------------------------------------
+-spec params_from_map(map()) -> string().
 params_from_map(Map) when is_map(Map) ->
   List = lists:map(fun ({Key, Value}) -> url_param_key(Key, Value) end, maps:to_list(Map)),
   Joined = lists:join("&", List),
   lists:flatten(Joined).
 
-% Heavily inspired from https://goo.gl/9ENw74
+%%%-------------------------------------------------------------------
+%% @doc Urlencode strings.
+%% Takes urls and encodes the "url unsafe characters" to be url safe.
+%% Heavily inspired by https://goo.gl/9ENw74
+%% @end
+%%%-------------------------------------------------------------------
+-spec url_encode(string()) -> string().
 url_encode(List) when is_list(List) ->
   AllowedChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_",
   F = fun (E) ->
@@ -26,6 +39,7 @@ url_encode(List) when is_list(List) ->
 url_encode(Binary) when is_binary(Binary) ->
   url_encode(binary_to_list(Binary)).
 
+-spec url_param_key(string(), string()) -> string().
 url_param_key(Key, Value) ->
   SafeKey = url_encode(Key),
   SafeValue = case Value of

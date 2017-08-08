@@ -1,0 +1,16 @@
+{application, torrlang,
+ [{description, "A torrent client"},
+  {vsn, "0.0.1"},
+  {registered, []},
+  {mod, { torrlang_app, []}},
+  {applications,
+   [kernel,
+    stdlib
+   ]},
+  {env,[]},
+  {modules, []},
+
+  {maintainers, []},
+  {licenses, ["MIT"]},
+  {links, []}
+ ]}.

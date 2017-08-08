@@ -1,49 +1,63 @@
+%%%-------------------------------------------------------------------
+%% @doc Bencoding module.
+%% Provides functions to encode and decode to and from the "bencoding"
+%% encoding used by BitTorrent.
+%% @end
+%%%-------------------------------------------------------------------
 -module(bencoding).
 -export([decode/1, encode/1]).
 
-% Bencoding module
-%
-% Exposes functions to decode bencoded strings and
-% encode objects into bencoded strings
+-type binary_string()  :: {'binary', string()}.
+-type torrent_metadata() :: [any()] | integer() | binary_string() | map().
 
 
-%%%%%%%%%%%%%%%%
-%%% Encoding %%%
-%%%%%%%%%%%%%%%%
+%%%-------------------------------------------------------------------
+%% @doc Encoding of an object.
+%% Take an object, of the type torrent_metadata() and encode it into a
+%% bencoded string.
+%% @end
+%%%-------------------------------------------------------------------
+-spec encode(torrent_metadata()) -> string().
 encode(List) when is_list(List) ->
   Internal = lists:flatmap(fun (Elm) -> encode(Elm) end, List),
-  lists:append(["l", Internal, "e"]);
+  lists:concat(["l", Internal, "e"]);
 
 encode(Dict) when is_map(Dict) ->
   Internal = encode_dict(Dict),
-  lists:append(["d", Internal, "e"]);
+  lists:concat(["d", Internal, "e"]);
 
 encode(Int) when is_integer(Int) ->
-  lists:append(["i", integer_to_list(Int), "e"]);
+  lists:concat(["i", integer_to_list(Int), "e"]);
 
 encode({binary, Bin}) ->
   BinaryLength = length(Bin),
-  lists:append([integer_to_list(BinaryLength), ":", Bin]);
+  lists:concat([integer_to_list(BinaryLength), ":", Bin]);
 
 encode(_) ->
   erlang:error(bencoding_unknown_item_to_encode).
 
 
+-spec encode_dict(map()) -> [string()].
 encode_dict(Dict) ->
   List = maps:to_list(Dict),
   lists:flatmap(fun ({Key, Value}) -> encode_key_value(Key, Value) end, List).
 
+-spec encode_key_value(binary_string(), torrent_metadata()) -> [string()].
 encode_key_value(Key, Value) ->
   lists:append([encode(Key), encode(Value)]).
 
-%%%%%%%%%%%%%%%%
-%%% Decoding %%%
-%%%%%%%%%%%%%%%%
+%%%-------------------------------------------------------------------
+%% @doc Decoding of an object.
+%% Take a encoded string, and decode into torrent_metadata()
+%% @end
+%%%-------------------------------------------------------------------
+-spec decode(string()) -> torrent_metadata().
 decode(String) ->
   {Result, []} = bdecode(String),
   Result.
 
 
+-spec bdecode(string()) -> {torrent_metadata(), _}.
 bdecode([H|T]) when H > $0, H =< $9 ->
   % Binary string
   {KeyLength, [_|RestWithKey]} = lists:splitwith(fun(C) -> C =/= $: end, [H|T]),
@@ -65,7 +79,7 @@ bdecode([$d|T]) ->
   bdecode_dict(maps:new(), T).
 
 
-% Parse dictionaries
+-spec bdecode_dict(map(),string()) -> {map(),string()}.
 bdecode_dict(Dict, [$e|Rest]) ->
   % Dictionary ends with $e, so simply return the constructed dictionary
   {Dict, Rest};
@@ -76,7 +90,7 @@ bdecode_dict(Dict, Payload) ->
   bdecode_dict(maps:put(Key, Value, Dict), Rest).
 
 
-% Parse lists
+-spec bdecode_list([torrent_metadata()], string()) -> {[torrent_metadata()], string()}.
 bdecode_list(List, [$e|Rest]) ->
   % Lists end with $e, so simply return the constructed list
   {List, Rest};

@@ -49,3 +49,6 @@ encoding_list_of_dicts_test() ->
   InnerDict2 = maps:from_list([{{binary, "key2"}, {binary, "value2"}}]),
   List = [InnerDict1, InnerDict2],
   ?assert(encode(List) =:= "ld4:key16:value1ed4:key26:value2ee").
+
+encoding_unknown_type_test() ->
+  ?assertException(error, bencoding_unknown_item_to_encode, encode(atom)).

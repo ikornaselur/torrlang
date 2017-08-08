@@ -1,33 +1,36 @@
-.SUFFIXES: .erl .beam .yrl
+REBAR := $(shell command -v rebar3 2> /dev/null)
 
-.erl.beam:
-	@erlc -o ebin/ -W $<
 
-.yrl.erl:
-	@erlc -W ebin/ $<
+.PHONY: test
 
-ERL = erl -boot start_clean
+# Install tools required for the project
+env:
+	brew install rebar3
 
-MODS = src/torrlang \
-			 src/bencoding src/bencoding_tests \
-			 src/trackers \
-			 src/urllib src/urllib_tests
-all: compile
+rebar_check:
+ifndef REBAR
+	$(error "rebar3 not installed. Run the 'env' target to install")
+endif
 
-# Compile all erlang modules
-compile: ${MODS:%=%.beam}
+# Run all EUnit tests
+tests: rebar_check
+	@rebar3 eunit
+test: tests
 
-# Run a specific problem
-run: compile
-	@${ERL} -pa ebin -noshell -s torrlang test -s init stop
+# Run the dialyzer
+dialyzer: rebar_check
+	@rebar3 dialyzer
+lint: dialyzer
 
-test: compile
-	@${ERL} -pa ebin -noshell -eval 'eunit:test("ebin", [verbose])' -s init stop
+# Clean all .beam files
+clean: rebar_check
+	@rebar3 clean
 
-# Run the dialyzer on all .erl files
-dialyzer:
-	@dialyzer src/*.erl
+# Run unit tests with coverage
+cover: rebar_check
+	@rebar3 eunit --cover > /dev/null
+	@rebar3 cover
 
-# Cleanup
-clean:
-	rm -rf ebin/*.beam erl_crash.dump
+# Compile the EDoc documentation from the source code
+docs: rebar_check
+	@rebar3 edoc
