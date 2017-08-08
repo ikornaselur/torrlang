@@ -1,8 +1,6 @@
 -module(urllib).
 -export([url_encode/1, params_from_map/1]).
 
--include_lib("eunit/include/eunit.hrl").
-
 % Urllib module
 %
 % Utils module for url items, such as to create urlsafe parameters
