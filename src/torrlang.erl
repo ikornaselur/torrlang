@@ -3,7 +3,7 @@
 
 % Torrlang
 %
-% A Torrent cleint written in Erlang, as an exercise to learn erlang
+% A Torrent client written in Erlang, as an exercise to learn erlang
 
 test() ->
   trackers:start(),
