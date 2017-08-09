@@ -1,6 +1,19 @@
 -module(trackers_tests).
--import(trackers, [parse_peers/1]).
+-import(trackers, [parse_peers/1, fold_bytes_to_integer/1]).
 -include_lib("eunit/include/eunit.hrl").
+
+
+fold_bytes_to_integer_single_byte_test() ->
+  ?assert(fold_bytes_to_integer([1]) =:= 1).
+
+fold_bytes_to_integer_multiple_bytes_test() ->
+  ?assert(fold_bytes_to_integer([1, 1, 1]) =:= 65793).
+
+fold_bytes_to_integer_single_byte_and_zeroes_test() ->
+  ?assert(fold_bytes_to_integer([1, 0, 0]) =:= 65536).
+
+fold_bytes_to_integer_empty_test() ->
+  ?assert(fold_bytes_to_integer([]) =:= 0).
 
 
 parse_peers_parses_ip_test() ->

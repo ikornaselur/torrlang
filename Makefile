@@ -38,3 +38,7 @@ cover: rebar_check
 # Compile the EDoc documentation from the source code
 docs: rebar_check
 	@rebar3 edoc
+
+# Start a shell with theproject in env
+shell: rebar_check
+	@rebar3 shell
