@@ -5,7 +5,7 @@
 %% @end
 %%%-------------------------------------------------------------------
 -module(trackers).
--export([get_torrent/1, request/2, parse_peers/1, fold_bytes_to_integer/1, start/0]).
+-export([get_torrent/1, request/2, parse_peers/1, start/0]).
 -import(config, [config/0]).
 
 start() ->
@@ -40,19 +40,6 @@ construct_request_from_info(Info) ->
 
 
 %%%-------------------------------------------------------------------
-%% @doc Parse a big-endian list of bytes into an integer. @end
-%%%-------------------------------------------------------------------
--spec fold_bytes_to_integer([byte()]) -> integer().
-fold_bytes_to_integer(Bytes) ->
-  fold_bytes_to_integer(lists:reverse(Bytes), 1).
--spec fold_bytes_to_integer([byte()], integer()) -> integer().
-fold_bytes_to_integer([], _) ->
-  0;
-fold_bytes_to_integer([Byte|Rest], Mult) ->
-  Mult * Byte + fold_bytes_to_integer(Rest, Mult * 256).
-
-
-%%%-------------------------------------------------------------------
 %% @doc Parse compact peers response.
 %% Parse a list of peers from the tracker in a compact form, where each
 %% peer is a 6 byte section consisting of 4 bytes for the IP address and
@@ -68,7 +55,7 @@ parse_peers(Peers) when length(Peers) rem 6 =:= 0 ->
   {Ip, Port} = lists:split(4, RawPeer),
   Peer = maps:from_list([
                          {"ip", list_to_tuple(Ip)},
-                         {"port", fold_bytes_to_integer(Port)}
+                         {"port", binary:decode_unsigned(list_to_binary(Port))}
                         ]),
   [Peer|parse_peers(Rest)];
 parse_peers(_) -> erlang:error(raw_peers_list_wrong_length).
