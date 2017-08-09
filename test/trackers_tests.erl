@@ -20,7 +20,7 @@ parse_peers_parses_ip_test() ->
   RawPeers = <<1,2,3,4,0,1>>,
   [Peer] = parse_peers(RawPeers),
   Ip = maps:get("ip", Peer),
-  ?assert(Ip =:= [1, 2, 3, 4]).
+  ?assert(Ip =:= {1,2,3,4}).
 
 parse_peers_parses_port_test() ->
   RawPeers = <<1,2,3,4,26,225>>,

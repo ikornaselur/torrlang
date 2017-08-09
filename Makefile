@@ -42,3 +42,7 @@ docs: rebar_check
 # Start a shell with theproject in env
 shell: rebar_check
 	@rebar3 shell
+
+# Compile the module
+compile: rebar_check
+	@rebar3 compile

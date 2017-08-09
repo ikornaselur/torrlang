@@ -65,6 +65,9 @@ parse_peers(Peers) when is_binary(Peers) ->
 parse_peers(Peers) when length(Peers) rem 6 =:= 0 ->
   {RawPeer, Rest} = lists:split(6, Peers),
   {Ip, Port} = lists:split(4, RawPeer),
-  Peer = maps:from_list([{"ip", Ip}, {"port", fold_bytes_to_integer(Port)}]),
+  Peer = maps:from_list([
+                         {"ip", list_to_tuple(Ip)},
+                         {"port", fold_bytes_to_integer(Port)}
+                        ]),
   [Peer|parse_peers(Rest)];
 parse_peers(_) -> erlang:error(raw_peers_list_wrong_length).
