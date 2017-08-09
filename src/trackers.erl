@@ -6,6 +6,7 @@
 %%%-------------------------------------------------------------------
 -module(trackers).
 -export([get_torrent/1, request/2, parse_peers/1, fold_bytes_to_integer/1, start/0]).
+-import(config, [config/0]).
 
 start() ->
   inets:start(),
@@ -32,8 +33,8 @@ construct_request_from_info(Info) ->
     {"uploaded", 0},    % XXX
     {"event", "started"},  % XXX
     {"left", maps:get(<<"length">>, Info)},
-    {"peer_id", "torrlang10axeltest10"},  % XXX
-    {"port", 6881},  % XXX
+    {"peer_id", maps:get(peer_id, config())},
+    {"port", maps:get(port, config())},
     {"info_hash", crypto:hash(sha, bencoding:encode(Info))}
   ]).
 
