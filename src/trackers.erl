@@ -14,12 +14,14 @@ get_torrent(Url) ->
   {ok, {{_, 200, _}, _, Payload}} = httpc:request(Url),
   bencoding:decode(Payload).
 
-request({binary, Url}, Info) when is_map(Info) ->
+request(Url, Info) when is_list(Url) andalso is_map(Info) ->
   RequestMap = construct_request_from_info(Info),
   UrlParams = urllib:params_from_map(RequestMap),
   UrlWithParams = lists:append([Url, "?", UrlParams]),
   {ok, {{_, 200, _}, _, Payload}} = httpc:request(UrlWithParams),
-  bencoding:decode(Payload).
+  bencoding:decode(Payload);
+request(Url, Info) when is_binary(Url) ->
+  request(binary_to_list(Url), Info).
 
 construct_request_from_info(Info) ->
   % TODO: Update values below to be real data
@@ -28,7 +30,7 @@ construct_request_from_info(Info) ->
     {"downloaded", 0},  % XXX
     {"uploaded", 0},    % XXX
     {"event", "started"},  % XXX
-    {"left", maps:get({binary, "length"}, Info)},
+    {"left", maps:get(<<"length">>, Info)},
     {"peer_id", "torrlang10axeltest10"},  % XXX
     {"port", 6881},  % XXX
     {"info_hash", crypto:hash(sha, bencoding:encode(Info))}

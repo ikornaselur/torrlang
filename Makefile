@@ -22,9 +22,13 @@ dialyzer: rebar_check
 	@rebar3 dialyzer
 lint: dialyzer
 
-# Clean all .beam files
+# Clean project
 clean: rebar_check
 	@rebar3 clean
+
+# Clean project, including removing _build
+clean_all: clean
+	@rm -rf _build
 
 # Run unit tests with coverage
 cover: rebar_check

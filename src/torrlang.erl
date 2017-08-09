@@ -12,8 +12,8 @@ test() ->
   io:format("Fetching ~p~n", [BitTorrentUrl]),
   Torrent = trackers:get_torrent(BitTorrentUrl),
 
-  Info = maps:get({binary, "info"}, Torrent),
-  AnnounceUrl = maps:get({binary, "announce"}, Torrent),
+  Info = maps:get(<<"info">>, Torrent),
+  AnnounceUrl = maps:get(<<"announce">>, Torrent),
 
   io:format("Querying tracker..~n", []),
   Response = trackers:request(AnnounceUrl, Info),
