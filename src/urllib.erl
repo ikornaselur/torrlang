@@ -16,7 +16,7 @@
 %%%-------------------------------------------------------------------
 -spec params_from_map(map()) -> string().
 params_from_map(Map) when is_map(Map) ->
-  List = lists:map(fun ({Key, Value}) -> url_param_key(Key, Value) end, maps:to_list(Map)),
+  List = [url_param_key(Key, Value) || {Key, Value} <- maps:to_list(Map)],
   Joined = lists:join("&", List),
   lists:flatten(Joined).
 

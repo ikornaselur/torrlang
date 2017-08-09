@@ -1,10 +1,11 @@
+%%%-------------------------------------------------------------------
+%% @doc Trackers module.
+%% Network communications to trackers and utility functions for parsing
+%% trackers respones
+%% @end
+%%%-------------------------------------------------------------------
 -module(trackers).
--export([get_torrent/1, request/2, start/0]).
-
-% Trackers module
-%
-% Exposes functions for network communications with trackers
-
+-export([get_torrent/1, request/2, parse_peers/1, start/0]).
 
 start() ->
   inets:start(),
@@ -35,3 +36,21 @@ construct_request_from_info(Info) ->
     {"port", 6881},  % XXX
     {"info_hash", crypto:hash(sha, bencoding:encode(Info))}
   ]).
+
+%%%-------------------------------------------------------------------
+%% @doc Parse compact peers response.
+%% Parse a list of peers from the tracker in a compact form, where each
+%% peer is a 6 byte section consisting of 4 bytes for the IP address and
+%% 2 bytes for the port.
+%% @end
+%%%-------------------------------------------------------------------
+-spec parse_peers([byte()]) -> [#{string()=>[byte()] | string()}].
+parse_peers([]) -> [];
+parse_peers(Peers) when is_binary(Peers) ->
+  parse_peers(binary_to_list(Peers));
+parse_peers(Peers) when length(Peers) rem 6 =:= 0 ->
+  {RawPeer, Rest} = lists:split(6, Peers),
+  {Ip, [BigPort, LowPort]} = lists:split(4, RawPeer),
+  Peer = maps:from_list([{"ip", Ip}, {"port", BigPort * 256 + LowPort}]),
+  [Peer|parse_peers(Rest)];
+parse_peers(_) -> erlang:error(raw_peers_list_wrong_length).

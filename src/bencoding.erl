@@ -18,7 +18,7 @@
 %%%-------------------------------------------------------------------
 -spec encode(torrent_metadata()) -> string().
 encode(List) when is_list(List) ->
-  Internal = lists:flatmap(fun (Elm) -> encode(Elm) end, List),
+  Internal = lists:flatten([encode(E) || E <- List]),
   lists:concat(["l", Internal, "e"]);
 
 encode(Dict) when is_map(Dict) ->
@@ -40,7 +40,7 @@ encode(_) ->
 -spec encode_dict(map()) -> [string()].
 encode_dict(Dict) ->
   List = maps:to_list(Dict),
-  lists:flatmap(fun ({Key, Value}) -> encode_key_value(Key, Value) end, List).
+  lists:flatten([encode_key_value(Key, Value) || {Key, Value} <- List]).
 
 -spec encode_key_value(binary(), torrent_metadata()) -> [string()].
 encode_key_value(Key, Value) ->
