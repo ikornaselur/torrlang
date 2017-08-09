@@ -7,8 +7,7 @@
 -module(bencoding).
 -export([decode/1, encode/1]).
 
--type binary_string()  :: {'binary', string()}.
--type torrent_metadata() :: [any()] | integer() | binary_string() | map().
+-type torrent_metadata() :: [any()] | integer() | binary() | map().
 
 
 %%%-------------------------------------------------------------------
@@ -29,9 +28,10 @@ encode(Dict) when is_map(Dict) ->
 encode(Int) when is_integer(Int) ->
   lists:concat(["i", integer_to_list(Int), "e"]);
 
-encode({binary, Bin}) ->
-  BinaryLength = length(Bin),
-  lists:concat([integer_to_list(BinaryLength), ":", Bin]);
+encode(Bin) when is_binary(Bin) ->
+  BinList = binary_to_list(Bin),
+  BinaryLength = length(BinList),
+  lists:concat([integer_to_list(BinaryLength), ":", BinList]);
 
 encode(_) ->
   erlang:error(bencoding_unknown_item_to_encode).
@@ -42,7 +42,7 @@ encode_dict(Dict) ->
   List = maps:to_list(Dict),
   lists:flatmap(fun ({Key, Value}) -> encode_key_value(Key, Value) end, List).
 
--spec encode_key_value(binary_string(), torrent_metadata()) -> [string()].
+-spec encode_key_value(binary(), torrent_metadata()) -> [string()].
 encode_key_value(Key, Value) ->
   lists:append([encode(Key), encode(Value)]).
 
@@ -61,8 +61,8 @@ decode(String) ->
 bdecode([H|T]) when H > $0, H =< $9 ->
   % Binary string
   {KeyLength, [_|RestWithKey]} = lists:splitwith(fun(C) -> C =/= $: end, [H|T]),
-  {Binary, Rest} = lists:split(list_to_integer(KeyLength), RestWithKey),
-  {{binary, Binary}, Rest};
+  {Res, Rest} = lists:split(list_to_integer(KeyLength), RestWithKey),
+  {list_to_binary(Res), Rest};
 
 bdecode([$i|T]) ->
   % Integer
