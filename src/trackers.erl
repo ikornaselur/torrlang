@@ -44,14 +44,7 @@ construct_request_from_info(Info) ->
 %% 2 bytes for the port.
 %% @end
 %%%-------------------------------------------------------------------
--spec parse_peers([byte()]) -> [#{string()=>[byte()] | string()}].
-parse_peers([]) -> [];
-parse_peers(Peers) when is_binary(Peers) ->
-  parse_peers(binary_to_list(Peers));
-parse_peers(Peers) when length(Peers) rem 6 =:= 0 ->
-  {RawPeer, Rest} = lists:split(6, Peers),
-  {Ip, Port} = lists:split(4, RawPeer),
-  Peer = #{ "ip" => list_to_tuple(Ip),
-            "port" => binary:decode_unsigned(list_to_binary(Port)) },
-  [Peer|parse_peers(Rest)];
-parse_peers(_) -> erlang:error(raw_peers_list_wrong_length).
+-spec parse_peers(binary()) -> [#{'ip':={_,_,_,_}, 'port':=integer()}].
+parse_peers(Peers) ->
+  [#{ip => {A,B,C,D},
+     port => Port} || <<A,B,C,D,Port:16/integer>> <= Peers].
