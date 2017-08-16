@@ -5,50 +5,50 @@
 
 % Decoding
 decoding_numbers_test() ->
-  ?assert(decode("i42e") =:= 42).
+  ?assertEqual(decode("i42e"), 42).
 
 decoding_binary_test() ->
-  ?assert(decode("4:test") =:= <<"test">>).
+  ?assertEqual(decode("4:test"), <<"test">>).
 
 decoding_list_test() ->
-  ?assert(decode("l4:testi42ee") =:= [<<"test">>, 42]).
+  ?assertEqual(decode("l4:testi42ee"), [<<"test">>, 42]).
 
 decoding_list_of_lists_test() ->
-  ?assert(decode("lli1ei2eeli3ei4eee") =:= [[1, 2], [3, 4]]).
+  ?assertEqual(decode("lli1ei2eeli3ei4eee"), [[1, 2], [3, 4]]).
 
 decoding_dict_test() ->
   Expected = maps:from_list([{<<"key">>, <<"value">>}]),
-  ?assert(decode("d3:key5:valuee") =:= Expected).
+  ?assertEqual(decode("d3:key5:valuee"), Expected).
 
 decoding_list_of_dicts_test() ->
-  InnerDict1 = maps:from_list([{<<"key1">>, <<"value1">>}]),
-  InnerDict2 = maps:from_list([{<<"key2">>, <<"value2">>}]),
+  InnerDict1 = #{<<"key1">> => <<"value1">>},
+  InnerDict2 = #{<<"key2">> => <<"value2">>},
   Expected = [InnerDict1, InnerDict2],
-  ?assert(decode("ld4:key16:value1ed4:key26:value2ee") =:= Expected).
+  ?assertEqual(decode("ld4:key16:value1ed4:key26:value2ee"), Expected).
 
 
 % Encoding
 encoding_numbers_test() ->
-  ?assert(encode(42) =:= "i42e").
+  ?assertEqual(encode(42), "i42e").
 
 encoding_binary_test() ->
-  ?assert(encode(<<"test">>) =:= "4:test").
+  ?assertEqual(encode(<<"test">>), "4:test").
 
 encoding_list_test() ->
-  ?assert(encode([1, 2, 3]) =:= "li1ei2ei3ee").
+  ?assertEqual(encode([1, 2, 3]), "li1ei2ei3ee").
 
 encoding_list_of_lists_test() ->
-  ?assert(encode([[1, 2], [3, 4]]) =:= "lli1ei2eeli3ei4eee").
+  ?assertEqual(encode([[1, 2], [3, 4]]), "lli1ei2eeli3ei4eee").
 
 encoding_dict_test() ->
   Dict = maps:from_list([{<<"key">>, <<"value">>}]),
-  ?assert(encode(Dict) =:= "d3:key5:valuee").
+  ?assertEqual(encode(Dict), "d3:key5:valuee").
 
 encoding_list_of_dicts_test() ->
-  InnerDict1 = maps:from_list([{<<"key1">>, <<"value1">>}]),
-  InnerDict2 = maps:from_list([{<<"key2">>, <<"value2">>}]),
+  InnerDict1 = #{<<"key1">> => <<"value1">>},
+  InnerDict2 = #{<<"key2">> => <<"value2">>},
   List = [InnerDict1, InnerDict2],
-  ?assert(encode(List) =:= "ld4:key16:value1ed4:key26:value2ee").
+  ?assertEqual(encode(List), "ld4:key16:value1ed4:key26:value2ee").
 
 encoding_unknown_type_test() ->
   ?assertException(error, bencoding_unknown_item_to_encode, encode(atom)).

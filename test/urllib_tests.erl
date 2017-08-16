@@ -4,20 +4,20 @@
 
 
 url_encode_allowed_chars_test() ->
-  ?assert(url_encode("FooBARbaz") =:= "FooBARbaz").
+  ?assertEqual(url_encode("FooBARbaz"), "FooBARbaz").
 
 url_encode_disallowed_chars_test() ->
-  ?assert(url_encode([1, 100, 200, 250]) =:= "%01d%C8%FA").
+  ?assertEqual(url_encode([1, 100, 200, 250]), "%01d%C8%FA").
 
 url_encode_combined_chars_test() ->
-  ?assert(url_encode([1, 100, 200, 250, $a, $b, $c, $d]) =:= "%01d%C8%FAabcd").
+  ?assertEqual(url_encode([1, 100, 200, 250, $a, $b, $c, $d]), "%01d%C8%FAabcd").
 
 url_encode_binary_test() ->
-  ?assert(url_encode(<<$a, $b, $c, $d>>) =:= "abcd").
+  ?assertEqual(url_encode(<<$a, $b, $c, $d>>), "abcd").
 
 params_from_map_test() ->
   Map = maps:from_list([{"key", "value"}]),
-  ?assert(params_from_map(Map) =:= "key=value").
+  ?assertEqual(params_from_map(Map), "key=value").
 
 params_from_map_invalid_value_test() ->
   Map = maps:from_list([{"key", atom}]),
