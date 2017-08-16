@@ -1,22 +1,23 @@
 %%%-------------------------------------------------------------------
 %% @doc Network utilities.
-%% Utilities to help withparsing and working with network requests
+%% Utilities to help with parsing and working with network requests
 %% @end
 %%%-------------------------------------------------------------------
 -module(network_utils).
--export([receive_message/1, socket_get/2, socket_get/3]).
+-export([receive_message/1, receive_message/2,
+         socket_get/2, socket_get/3]).
 
 %%%-------------------------------------------------------------------
 %% @doc Receive a peer message from a socket. @end
 %%%-------------------------------------------------------------------
 receive_message(Socket) ->
-  Length = binary:decode_unsigned(socket_get(Socket, 4)),
-  receive_message(Socket, Length).
+  <<Length:32/integer>> = network_utils:socket_get(Socket, 4),
+  network_utils:receive_message(Socket, Length).
 
 receive_message(_Socket, 0) ->
-  io:format("Got keep_alive", []);
+  {keep_alive, ""};
 receive_message(Socket, 1) ->
-  [RawType] = binary_to_list(socket_get(Socket, 1)),
+  <<RawType:8>> = network_utils:socket_get(Socket, 1),
   Type = case RawType of
            0 -> choke;
            1 -> unchoke;
@@ -25,7 +26,7 @@ receive_message(Socket, 1) ->
          end,
   {Type, ""};
 receive_message(Socket, Length) ->
-  [RawType] = binary_to_list(socket_get(Socket, 1)),
+  <<RawType:8>> = network_utils:socket_get(Socket, 1),
   Type = case RawType of
            4 -> have;
            5 -> bitfield;
@@ -33,13 +34,28 @@ receive_message(Socket, Length) ->
            7 -> piece;
            8 -> cancel
          end,
+  RawMessage = network_utils:socket_get(Socket, Length - 1),
   Message = case Type of
-              bitfield -> [X || <<X:1>> <= socket_get(Socket, Length - 1)];
+              have ->
+                <<Index:32/integer>> = RawMessage,
+                Index;
+              bitfield ->
+                [X || <<X:1>> <= RawMessage];
+              request ->
+                <<Index:32/integer,
+                  Begin:32/integer,
+                  RequestLength:32/integer>> = RawMessage,
+                #{index => Index, piece_begin => Begin, length => RequestLength};
               piece ->
-                Payload = socket_get(Socket, Length - 1),
-                {_IndexAndBegin, File} = lists:split(8, binary_to_list(Payload)),
-                File;
-              _ -> socket_get(Socket, Length - 1)
+                <<Index:32/integer,
+                  Begin:32/integer,
+                  Binary/binary>> = RawMessage,
+                #{index => Index, piece_begin => Begin, binary => Binary};
+              cancel ->
+                <<Index:32/integer,
+                  Begin:32/integer,
+                  RequestLength:32/integer>> = RawMessage,
+                #{index => Index, piece_begin => Begin, length => RequestLength}
             end,
   {Type, Message}.
 
